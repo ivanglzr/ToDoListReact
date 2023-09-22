@@ -1,0 +1,18 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: system-ui;
+}
+
+html {
+  min-height: 100%;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  background: #222;
+  color: white;
+}
