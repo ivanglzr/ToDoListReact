@@ -1,41 +1,45 @@
 import { useState } from "react";
 import "./App.css";
-// import { useEffect } from "react";
 
 function App() {
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState(() => {
+    return window.localStorage.getItem("tasks")
+      ? JSON.parse(window.localStorage.getItem("tasks"))
+      : [];
+  });
+  const finalizatedTasks = () => {
+    let i = 0;
+
+    tasks.forEach((e) => {
+      if (!e.isFinalizated) i++;
+    });
+
+    return i;
+  };
 
   const handleCheck = ({ index }) => {
-    let anteriorTasks = tasks;
+    let anteriorTasks = [...tasks];
     anteriorTasks[index].isFinalizated = !anteriorTasks[index].isFinalizated;
+
+    anteriorTasks;
 
     setTasks(anteriorTasks);
 
-    tasks.forEach;
+    window.localStorage.setItem("tasks", JSON.stringify(anteriorTasks));
   };
 
-  const addTask = (e) => {
-    e.preventDefault();
+  const addTask = () => {
+    const name = prompt("Nombre de la tarea");
+    const color = prompt("Color de la tarea");
+    const days = prompt("Dias de la tarea");
 
-    const { name, color, days } = Object.fromEntries(new FormData(e.target));
+    const newTasks = [
+      ...tasks,
+      { name: name, color: color, days: days, isFinalizated: false },
+    ];
+    setTasks(newTasks);
 
-    if (name.length < 2 || color.length < 2)
-      return alert("Los datos no son correctos");
-
-    let exists = false;
-
-    tasks.forEach((e) => {
-      if (e.name == name) exists = true;
-    });
-
-    if (exists) return alert("La tarea ya existe");
-
-    const anteriorTasks = tasks;
-
-    setTasks([
-      ...anteriorTasks,
-      { name: name, color: color, isFinalizated: false, days: days },
-    ]);
+    window.localStorage.setItem("tasks", JSON.stringify(newTasks));
   };
 
   const deleteTask = ({ index }) => {
@@ -45,6 +49,8 @@ function App() {
     console.log(anteriorTasks);
 
     setTasks(anteriorTasks);
+
+    window.localStorage.setItem("tasks", JSON.stringify(anteriorTasks));
   };
 
   // useEffect(() => {
@@ -55,46 +61,31 @@ function App() {
 
   return (
     <div id="container">
-      <ul className="tasks">
-        {tasks.map((task, index) => {
+      <div id="tasks">
+        {tasks?.map((e, i) => {
           return (
-            <li
-              key={index}
-              className="task"
-              style={{ backgroundColor: task.color }}
-            >
-              <h2 className="task-name">{task.name}</h2>
+            <div key={i} style={{ backgroundColor: e.color }} className="task">
+              <h2>{e.name}</h2>
               <div className="buttons">
-                {task.isFinalizated ? (
-                  <input
-                    type="checkbox"
-                    name="isFinalizated"
-                    onClick={() => handleCheck({ index })}
-                    checked
-                  />
-                ) : (
-                  <input
-                    type="checkbox"
-                    name="isFinalizated"
-                    onClick={() => handleCheck({ index })}
-                  />
-                )}
-                <i
-                  onClick={() => deleteTask({ index })}
-                  className="fa-solid fa-trash-can"
-                ></i>
+                <input
+                  type="checkbox"
+                  onChange={() => {
+                    handleCheck({ index: i });
+                  }}
+                  checked={e.isFinalizated}
+                />
+                <button onClick={() => deleteTask({ index: i })}>
+                  <i className="fa-solid fa-trash-can"></i>
+                </button>
               </div>
-            </li>
+            </div>
           );
         })}
-      </ul>
-      {/* <p>{remaining}</p> */}
-      <form onSubmit={addTask}>
-        <input type="text" name="name" />
-        <input type="text" name="color" />
-        <input type="text" name="days" />
-        <button type="submit">Enviar</button>
-      </form>
+      </div>
+      {tasks.length > 0 && <p>Quedan {finalizatedTasks()} tareas</p>}
+      <button id="create-task" onClick={addTask}>
+        Crear tarea
+      </button>
     </div>
   );
 }
